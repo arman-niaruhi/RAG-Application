@@ -7,6 +7,7 @@ from core.language_model import LanguageModel
 from services.rag_chatbot import RAGChatbot
 from utils.file_utils import save_uploaded_file
 import logging
+import asyncio
 
 logging.basicConfig(
     format="%(asctime)s — %(name)s — %(levelname)s — %(message)s",
@@ -63,11 +64,23 @@ if uploaded_file:
     question = st.text_input("Ask a question about the PDF", placeholder="Type your question here and press Enter")
 
     if question:
-        print(question)
-        with st.spinner("Generating answer..."):
-            answer = rag_bot.answer_question(question)
-        st.markdown("### Answer:")
-        st.info(answer)
+        answer_container = st.empty()  # placeholder for live updates
+        full_answer = ""
+
+        with st.spinner("Streaming answer..."):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            async def run_stream():
+                nonlocal_full_answer = {"text": ""}  # wrap in dict to mutate inside loop
+                async for chunk in rag_bot.stream_question_answer(question):
+                    nonlocal_full_answer["text"] += chunk
+                    answer_container.markdown(f"### Answer:\n{nonlocal_full_answer['text']}")
+
+            loop.run_until_complete(run_stream())
+
+        st.success("Answer complete!")
+
 
 else:
     st.info("Please upload a PDF file to get started.")
