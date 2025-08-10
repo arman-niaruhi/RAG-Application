@@ -24,6 +24,10 @@ class RAGChatbot:
         query_embedding = self.embedder.embed_documents([question])[0]
         docs = self.vector_store.similarity_search(query_embedding)
         context = "\n".join([doc.page_content for doc in docs])
-        answer = self.language_model.generate_answer(context, question)
+        
+        prompt = context + "\nQuestion: " + question
+        answer = self.language_model.generate_answer(prompt)
+        
         logger.info("Question answered")
         return answer
+
