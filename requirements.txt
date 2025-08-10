@@ -1,0 +1,9 @@
+streamlit
+pdfplumber
+langchain
+openai
+faiss-cpu
+pdfplumber
+langchain-community
+tiktoken
+sentence_transformers
