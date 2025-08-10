@@ -1,21 +1,23 @@
 import logging
-import subprocess
+import requests
 
 logger = logging.getLogger(__name__)
 
 class LanguageModel:
-    def __init__(self, model_name="tinyllama:latest"):
+    def __init__(self, model_name="llama3:latest"):
         self.model_name = model_name
+        self.api_url = "http://localhost:11434/api/generate"
 
     def generate_answer(self, prompt):
-        cmd = ["ollama", "run", self.model_name, prompt]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode == 0:
-            return result.stdout.strip()
-        else:
-            raise RuntimeError(f"Ollama error: {result.stderr}")
-
-
-
-
-
+        payload = {
+            "model": self.model_name,
+            "prompt": prompt,
+            "stream": False
+        }
+        try:
+            response = requests.post(self.api_url, json=payload)
+            response.raise_for_status()
+            data = response.json()
+            return data.get("response", "").strip()
+        except Exception as e:
+            raise RuntimeError(f"Ollama API error: {e}")
