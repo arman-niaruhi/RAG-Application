@@ -8,12 +8,6 @@ from services.rag_chatbot import RAGChatbot
 from utils.file_utils import save_uploaded_file
 import logging
 
-import os
-
-# Check if the API key is set correctly
-print("OPENAI_API_KEY =", os.getenv("OPENAI_API_KEY"))
-
-
 logging.basicConfig(
     format="%(asctime)s — %(name)s — %(levelname)s — %(message)s",
     level=logging.INFO,
