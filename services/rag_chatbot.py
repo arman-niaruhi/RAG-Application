@@ -39,6 +39,3 @@ class RAGChatbot:
         async for chunk in self.stream_answer_from_context(context, question):
             yield chunk
 
-
-# Example usage
-# asyncio.run(bot.answer_question("What is the capital of Germany?"))
