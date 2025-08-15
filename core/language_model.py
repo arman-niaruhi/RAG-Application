@@ -1,28 +1,27 @@
-import requests
-import json
+from openai import OpenAI
+
 
 class LanguageModel:
-    def __init__(self, model_name="llama3:latest"):
+    def __init__(self, model_name="tinyllama:latest"):
         self.model_name = model_name
         self.api_url = "http://localhost:11434/api/generate"
+        self.ollama_client = OpenAI(
+            base_url="http://localhost:11434/v1",
+            api_key="ollama",  # required but unused
+        )
 
     def stream_answer(self, prompt):
-        payload = {
-            "model": self.model_name,
-            "prompt": prompt,
-            "stream": True
-        }
+        """Query Ollama model with the given prompt"""
         try:
-            with requests.post(self.api_url, json=payload, stream=True) as r:
-                r.raise_for_status()
-                for line in r.iter_lines(decode_unicode=True):
-                    if line.strip():
-                        try:
-                            data = json.loads(line)
-                            chunk = data.get("response", "")
-                            if chunk:
-                                yield chunk
-                        except Exception:
-                            continue
+            response = self.ollama_client.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.7,
+                max_tokens=2000,
+            )
+            return response.choices[0].message.content
         except Exception as e:
-            raise RuntimeError(f"Ollama API streaming error: {e}")
+            print(f"Error querying Ollama: {str(e)}")
+            raise
